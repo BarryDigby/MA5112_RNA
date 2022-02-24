@@ -62,7 +62,7 @@ process Download_Reference {
     output:
     file("*.fa") into fasta_downloaded
 
-    when: !params.fasta
+    when: !params.fasta && !params.index
 
     script:
     """
