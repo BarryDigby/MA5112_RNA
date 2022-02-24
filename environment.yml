@@ -1,0 +1,5 @@
+name: MA5112_RNA
+channels:
+ - bioconda
+dependencies:
+ - kallisto
