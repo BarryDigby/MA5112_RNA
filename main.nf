@@ -52,77 +52,77 @@ if(params.input_type == 'paired-end'){
 }
 
 
-process download_reference{
-        tag "Downloading ENSEMBL cDNA reference (release-103)"
-	publishDir "${params.outdir}/reference", pattern: "*.fa", mode:'copy'
+process Download_Reference {
+    tag "Downloading ENSEMBL cDNA reference (release-103)"
+    publishDir "${params.outdir}/reference", pattern: "*.fa", mode:'copy'
 
-	output:
-	file("*.fa") into fasta_downloaded
+    output:
+    file("*.fa") into fasta_downloaded
 
-        when: !params.fasta
+    when: !params.fasta
 
-	script:
-	"""
-	wget --no-check-certificate http://ftp.ensembl.org/pub/release-103/fasta/homo_sapiens/cdna/Homo_sapiens.GRCh38.cdna.all.fa.gz
-	gunzip Homo_sapiens.GRCh38.cdna.all.fa.gz
-	mv Homo_sapiens.GRCh38.cdna.all.fa GRCh38.cdna.fa
-	"""
+    script:
+    """
+    wget --no-check-certificate http://ftp.ensembl.org/pub/release-103/fasta/homo_sapiens/cdna/Homo_sapiens.GRCh38.cdna.all.fa.gz
+    gunzip Homo_sapiens.GRCh38.cdna.all.fa.gz
+    mv Homo_sapiens.GRCh38.cdna.all.fa GRCh38.cdna.fa
+    """
 }
 
 ch_fasta = params.fasta ? Channel.value(file(params.fasta)) : fasta_downloaded
 
-process create_index{
-        tag "Indexing $fasta"
-	publishDir "${params.outdir}/index", pattern: "*.idx", mode:'copy'
+process INDEX {
+    tag "Indexing $fasta"
+    publishDir "${params.outdir}/index", pattern: "*.idx", mode:'copy'
 
-	input:
-	file(fasta) from ch_fasta
+    input:
+    file(fasta) from ch_fasta
 
-	output:
-	file("*.idx") into index_created
+    output:
+    file("*.idx") into index_created
 
-	when: !params.index
+    when: !params.index
 
-	script:
-	"""
-	kallisto index -i GRCh38.fa.idx $fasta
-	"""
+    script:
+    """
+    kallisto index -i GRCh38.fa.idx $fasta
+    """
 }
 
 ch_index = params.index ? Channel.value(file(params.index)) : index_created
 
-process kallisto{
-        tag "Pseudo-aligning $base"
-	publishDir "${params.outdir}/quant", pattern: "${base}", mode:'copy'
+process QUANT {
+    tag "Pseudo-aligning $base"
+    publishDir "${params.outdir}/quant", pattern: "${base}", mode:'copy'
 
-	input:
-	tuple val(base), file(reads) from ch_reads
-	file(index) from ch_index
+    input:
+    tuple val(base), file(reads) from ch_reads
+    file(index) from ch_index
 
-	output:
-	file("${base}") into kallisto_out
+    output:
+    file("${base}") into kallisto_out
 
-	script:
-	if(params.input_type == 'paired-end'){
-	"""
-	kallisto quant \
-	-i $index \
-	-t ${params.cpus} \
-	-o ${base}/ \
-	--bias \
-	$reads
-	"""
-	}else if(params.input_type == 'single-end'){
-	"""
-	kallisto quant \
-	--single \
-	-l ${params.fragment_length} \
-	-s ${params.standard_deviation} \
-	-i $index \
-	-t ${params.cpus}/ \
-	-o ${base}/ \
-	--bias \
-	$reads
-	"""
-	}
+    script:
+    if(params.input_type == 'paired-end'){
+    """
+    kallisto quant \
+        -i $index \
+        -t ${params.cpus} \
+        -o ${base}/ \
+        --bias \
+        $reads
+    """
+    }else if(params.input_type == 'single-end'){
+    """
+    kallisto quant \
+        --single \
+        -l ${params.fragment_length} \
+        -s ${params.standard_deviation} \
+        -i $index \
+        -t ${params.cpus}/ \
+        -o ${base}/ \
+        --bias \
+        $reads
+    """
+    }
 }
