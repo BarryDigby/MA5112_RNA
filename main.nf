@@ -5,19 +5,22 @@ def helpMessage() {
    ====================================================
                     MA5112 RNA-Seq
    ====================================================
-    Usage:
-    The typical command for running the pipeline is as follows:
-    nextflow -bg run main.nf --input "/data/reads/*_r{1,2}.fastq.gz" --input_type 'paired_end' --fasta '/data/index/GRCh38.cdna.fa' --cpus 2
-   Arguments:
-      --input                         [str] Path to input RNA-Seq data. Use a suitable wildcard glob pattern to capture paired end
-                                            or single end reads surrounded in double quotes.
+   Usage:
+   A typical command for running the pipeline is as follows:
+
+     nextflow -bg run BarryDigby/MA5112_RNA --input "reads/*_r{1,2}.fastq.gz" --input_type 'paired_end' --fasta 'index/GRCh38.cdna.fa' --cpus 2
+
+   Workflow arguments:
+      --input                         [str] Path to input RNA-Seq data. Use a suitable wildcard glob pattern to capture
+                                            single-end/paired-end sequencing reads
       --input_type                    [str] Input data type
                                             Available: paired-end, single-end
       --fasta                         [str] Path to reference cDNA file
-                                            Automatically downloaded if left empty
+                                            (Automatically downloaded if left empty)
       --index                         [str] Path to reference cDNA Kallisto index file
-                                            Automatically generated if left empty
+                                            (Automatically generated if left empty)
       --outdir                        [str] Directory to write results to
+   
    Kallisto arguments:
       --cpus                          [int] Number of CPU cores to use for alignment
       --fragment_length               [int] Estimated average fragment length (single end data)
